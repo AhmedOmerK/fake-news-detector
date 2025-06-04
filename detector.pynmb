@@ -1,0 +1,317 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "21fbb980-b362-4dd0-8ce1-fe23497f11d5",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>text</th>\n",
+       "      <th>label</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Serial liar and 2020 Democrat presidential hop...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>The drum beat keeps getting louder. More and m...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>WASHINGTON (Reuters) - Prominent Republican se...</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>BERLIN (Reuters) - Germany s Social Democrats ...</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Donald Trump kicked off Hispanic Heritage Mont...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                                text  label\n",
+       "0  Serial liar and 2020 Democrat presidential hop...      0\n",
+       "1  The drum beat keeps getting louder. More and m...      0\n",
+       "2  WASHINGTON (Reuters) - Prominent Republican se...      1\n",
+       "3  BERLIN (Reuters) - Germany s Social Democrats ...      1\n",
+       "4  Donald Trump kicked off Hispanic Heritage Mont...      0"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "# Load the CSVs\n",
+    "fake_df = pd.read_csv(\"data/Fake.csv\")\n",
+    "real_df = pd.read_csv(\"data/True.csv\")\n",
+    "\n",
+    "# Add labels\n",
+    "fake_df[\"label\"] = 0\n",
+    "real_df[\"label\"] = 1\n",
+    "\n",
+    "# Combine and shuffle\n",
+    "df = pd.concat([fake_df, real_df])\n",
+    "df = df[[\"text\", \"label\"]].dropna().sample(frac=1).reset_index(drop=True)\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "fff3b429-67ae-4826-b368-47ebbec18ab0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[nltk_data] Downloading package stopwords to\n",
+      "[nltk_data]     /Users/niggaomer/nltk_data...\n",
+      "[nltk_data]   Package stopwords is already up-to-date!\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>text</th>\n",
+       "      <th>label</th>\n",
+       "      <th>clean_text</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Serial liar and 2020 Democrat presidential hop...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>serial liar democrat presidential hopeful sena...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>The drum beat keeps getting louder. More and m...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>drum beat keeps getting louder americans quest...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>WASHINGTON (Reuters) - Prominent Republican se...</td>\n",
+       "      <td>1</td>\n",
+       "      <td>washington reuters prominent republican senato...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>BERLIN (Reuters) - Germany s Social Democrats ...</td>\n",
+       "      <td>1</td>\n",
+       "      <td>berlin reuters germany social democrats still ...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Donald Trump kicked off Hispanic Heritage Mont...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>donald trump kicked hispanic heritage month fr...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                                text  label  \\\n",
+       "0  Serial liar and 2020 Democrat presidential hop...      0   \n",
+       "1  The drum beat keeps getting louder. More and m...      0   \n",
+       "2  WASHINGTON (Reuters) - Prominent Republican se...      1   \n",
+       "3  BERLIN (Reuters) - Germany s Social Democrats ...      1   \n",
+       "4  Donald Trump kicked off Hispanic Heritage Mont...      0   \n",
+       "\n",
+       "                                          clean_text  \n",
+       "0  serial liar democrat presidential hopeful sena...  \n",
+       "1  drum beat keeps getting louder americans quest...  \n",
+       "2  washington reuters prominent republican senato...  \n",
+       "3  berlin reuters germany social democrats still ...  \n",
+       "4  donald trump kicked hispanic heritage month fr...  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import nltk\n",
+    "import string\n",
+    "from nltk.corpus import stopwords\n",
+    "\n",
+    "# Download stopwords if not already\n",
+    "nltk.download('stopwords')\n",
+    "stop_words = set(stopwords.words('english'))\n",
+    "\n",
+    "def clean_text(text):\n",
+    "    text = text.lower()\n",
+    "    tokens = text.split()\n",
+    "    tokens = [word.strip(string.punctuation) for word in tokens]\n",
+    "    tokens = [word for word in tokens if word.isalpha() and word not in stop_words]\n",
+    "    return \" \".join(tokens)\n",
+    "\n",
+    "# Clean all text\n",
+    "df[\"clean_text\"] = df[\"text\"].apply(clean_text)\n",
+    "df.head()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "d0b496be-acc8-4c31-8448-67bcacfe2b16",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.99      0.99      0.99      4726\n",
+      "           1       0.98      0.99      0.99      4254\n",
+      "\n",
+      "    accuracy                           0.99      8980\n",
+      "   macro avg       0.99      0.99      0.99      8980\n",
+      "weighted avg       0.99      0.99      0.99      8980\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.metrics import classification_report\n",
+    "\n",
+    "# Convert text into TF-IDF features\n",
+    "vectorizer = TfidfVectorizer(max_df=0.7)\n",
+    "X = vectorizer.fit_transform(df[\"clean_text\"])\n",
+    "y = df[\"label\"]\n",
+    "\n",
+    "# Split into training and testing sets\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+    "\n",
+    "# Train a logistic regression model\n",
+    "model = LogisticRegression()\n",
+    "model.fit(X_train, y_train)\n",
+    "\n",
+    "# Evaluate the model\n",
+    "y_pred = model.predict(X_test)\n",
+    "print(classification_report(y_test, y_pred))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "41bdce4a-62e1-4ae8-9d98-32b7dc18d9c1",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['model/tfidf_vectorizer.pkl']"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import joblib\n",
+    "\n",
+    "# Save the model\n",
+    "joblib.dump(model, \"model/fake_news_model.pkl\")\n",
+    "\n",
+    "# Save the vectorizer\n",
+    "joblib.dump(vectorizer, \"model/tfidf_vectorizer.pkl\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2c64b933-8e70-4bea-8476-602f59e6b1ea",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
