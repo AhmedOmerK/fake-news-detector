@@ -4,7 +4,13 @@ import string
 import nltk
 from nltk.corpus import stopwords
 
-# Download stopwords once
+# Ensure nltk stopwords download works (even on Streamlit Cloud)
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+    ssl._create_default_https_context = _create_unverified_https_context
+except AttributeError:
+    pass
+
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
@@ -18,7 +24,7 @@ def clean_text(text):
     tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
     return " ".join(tokens)
 
-# Load the model and vectorizer
+# Load model + vectorizer
 model = joblib.load("model/fake_news_model.pkl")
 vectorizer = joblib.load("model/tfidf_vectorizer.pkl")
 
