@@ -5,11 +5,12 @@ import nltk
 from nltk.corpus import stopwords
 
 # Ensure nltk stopwords download works (even on Streamlit Cloud)
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-    ssl._create_default_https_context = _create_unverified_https_context
-except AttributeError:
-    pass
+import ssl
+ssl._create_default_https_context = (
+    ssl._create_unverified_context
+    if hasattr(ssl, "_create_unverified_context")
+    else ssl._create_default_https_context
+)
 
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
